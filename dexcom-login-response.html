@@ -1,0 +1,83 @@
+<style>
+  .content {
+    margin-top: 40px;
+    width: 100%;
+    font-family: Helvetica Neue,Helvetica,Arial,sans-serif; 
+  }
+  .token-box {
+    width: 400px;
+    margin: auto;
+    max-width: 100%;
+  }
+  #copy-ver {
+    position: absolute;
+    text-align: right;
+    font-size: 12px;
+    width: 400px;
+    max-width: 100%;
+    display: none;
+  }
+  #token-input {
+    font-size: 20px;
+    height: 50px;
+    width: 338px;
+    max-width: calc(100% - 60px);
+    margin: auto;
+    margin-top: 10px;
+    padding-left: 8px;
+    display: inline-block;
+    border-radius: 10px 0 0 10px;
+    border: 2px solid #D8D8E5;
+    background-color: #E8F4FF;
+    color: #05a;
+  }
+  #copy-button {
+    font-size: 20px;
+    height: 50px;
+    width: 60px;
+    border-radius: 0 10px 10px 0;
+    background-color: #D8D8E5;
+    color: #fff;
+    border: none;
+    margin-left: -6px;
+    transition: background-color .2s;
+  }
+  #copy-button:hover {
+    background-color: #b6b6ce;
+  }
+  input:focus, button:focus {
+    outline: none !important;
+  }
+</style>
+<script>
+  function copyToken() {
+    var copyText = document.getElementById("token-input");
+    copyText.select();
+    copyText.setSelectionRange(0, 99999); /* For mobile devices */
+    document.execCommand("copy");
+    document.getElementById("copy-ver").style.display = "inherit";
+  }
+</script>
+<head>   
+  <meta name="viewport" content="width=device-width" />
+  <title>Dexcom Authentication</title>
+</head>
+<body>
+  <div class="content">
+    <div class="token-box">
+      <div id="copy-ver">Copied</div>
+      <div class="label">Your authentication token:</div>
+      <input id="token-input" type="text" readonly value="okuujrfrlsfafyfsbimnnnhekhaycrmnftktxtiflbcsotyzayujbgaicfxwvuaibbreuowijfcfnmgvhlrwtlvbkfqfnydscuosobtfhffiptdyglvzxvvttpiialpqxotdujvnchytnedumsvglwmbwfboirwaukiitsawbgtuvprkkbzutwycerqxuychaxfjmvjvyupydahlfplbqmapcozmytmcnilzemjmctppeduejoiynnhqouncmodmkblfrsymgtxevpmobdhhvdkwmonnovimljwrwcjdkrmvsujfhothydkerktpcx"/>
+      <button id="copy-button" onclick="copyToken();">Copy</button>
+    </div>
+  </div>
+</body>
+<script>
+  function copyToken() {
+    var copyText = document.getElementById("token-input");
+    copyText.select();
+    copyText.setSelectionRange(0, 99999); /* For mobile devices */
+    document.execCommand("copy");
+    document.getElementById("copy-ver").style.display = "inherit";
+  }
+  document.getElementById("token-input").value="
