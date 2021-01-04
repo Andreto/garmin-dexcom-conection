@@ -46,10 +46,21 @@ MongoClient.connect(uri, {
   app.get('/get-data', (req, res) => {
     var q = url.parse(req.url, true).query;
 
-    console.log('\x1b[36m%s\x1b[0m', 'Request: /get-data', q.auth)
-    getEgvs(q.auth);
+    var time_now = new Date();
+    var timestamp = time_now.getHours() + ":" + time_now.getMinutes() + ":" + time_now.getSeconds();
+
+    console.log('\x1b[36m' + 'Request: /get-data' + '\x1b[2m', timestamp + '\x1b[0m', q.auth, )
 
     if (q.auth) {
+      var time_Sch = new Date(time_now.getTime() + 4.5*60000);
+      var sch_timestamp = time_Sch.getHours() + ":" + time_Sch.getMinutes() + ":" + time_Sch.getSeconds();
+      console.log('\x1b[33m', 'Scheduled getEgvs ->', '\x1b[2m', sch_timestamp);
+      setTimeout(function(){
+        getEgvs(q.auth)
+        var time_now = new Date();
+        var timestamp = time_now.getHours() + ":" + time_now.getMinutes() + ":" + time_now.getSeconds();
+        console.log('\x1b[33m', 'Completed scheduled getEgvs', '\x1b[2m', timestamp);
+      }, 270 * 1000);
       cgm_data.findOne({session_token: q.auth}, function(err, result) {
         if (result) {
           delete result["_id"];
@@ -83,6 +94,7 @@ MongoClient.connect(uri, {
     } else if (q.code) {
       var authorization_code = q.code;
       var session_token = createToken(64);
+      console.log('\x1b[33m%s\x1b[0m', 'Creating new session...');
       postAuthRequest('authorization_code', authorization_code, null, session_token);
 
       res.writeHead(200, {'Content-Type': 'text/html'});
@@ -184,7 +196,8 @@ MongoClient.connect(uri, {
       makeRequest(req_data, req_options, session_token, function(chunk_data) {
         var m_data = JSON.parse(chunk_data);
         m_data.session_token = session_token;
-        var m_query = {"token": session_token};
+        var m_query = {"session_token": session_token};
+        console.log(chunk_data, session_token);
         auth_data.updateOne(m_query, {$set:m_data}, function(err, res) {
           if (err) throw err;
           console.log('\x1b[32m%s\x1b[0m', 'Sucsessfully refreshed auth');
@@ -204,7 +217,7 @@ MongoClient.connect(uri, {
     startDate = startDate.toISOString().split(".")[0];
     endDate = endDate.toISOString().split(".")[0];
 
-    console.log(startDate, endDate);
+    console.log('\x1b[33m%s\x1b[0m', 'Geting egvs data...');
 
 
     var req_options = {
@@ -219,11 +232,15 @@ MongoClient.connect(uri, {
     console.log(session_token);
     auth_data.findOne({"session_token": session_token}, function(err, result) {
       if (err) throw err;
-      req_options.headers.authorization = "Bearer " + result.access_token;
-      makeRequest("", req_options, session_token, function(chunk_data) {
-        processEgvsData(chunk_data, session_token);
-      });
-      console.log('\x1b[32m%s\x1b[0m', 'GET egvs sent');
+      if(result.access_token) {
+        req_options.headers.authorization = "Bearer " + result.access_token;
+        makeRequest("", req_options, session_token, function(chunk_data) {
+          processEgvsData(chunk_data, session_token);
+        });
+        console.log('\x1b[32m%s\x1b[0m', 'GET egvs sent');
+      } else {
+        console.log('\x1b[31m%s\x1b[0m', 'GET egvs -> invalid token');
+      }
     });
   }
 
@@ -261,15 +278,17 @@ MongoClient.connect(uri, {
 
 
     } catch (error) {
-      console.info(data);
-      console.error(error);
       if (data.fault) {
+        console.log('\x1b[31m%s\x1b[0m', 'prosessing egvs data failed');
         if (data.fault.faultString == 'Invalid Access Token') {
           console.log('\x1b[33m%s\x1b[0m', 'Refreshing token...');
           auth_data.findOne(m_query, function(err, result ){
             postAuthRequest('refresh_token', null, result.refresh_token, session_token);
           })
         }
+      } else {
+        console.info(data);
+        console.error(error);
       }
     }
   }
